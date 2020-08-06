@@ -17,3 +17,9 @@
     + nn.DistributedDataParallel
         + Use multiprocessing where a process is created for each GPU
         + Recommended method!
+# Useful Links
++ [official doc 1](https://pytorch.org/tutorials/beginner/dist_overview.html): Overview and links to different tutorials
++ [official doc 2](https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel): API for torch.nn.DistributedDataParallel
++ [official doc 3](https://pytorch.org/docs/master/distributed.html#distributed-basics): Basics of pytorch distributed training
++ [official demo 1](https://github.com/pytorch/examples/blob/master/imagenet/main.py): Elegant example of DistributedDataParallel usage in imagenet that use ``mp.spawn()`` to init parallelism
++ [3rd party demo 1](https://fyubang.com/2019/07/23/distributed-training3/) 
