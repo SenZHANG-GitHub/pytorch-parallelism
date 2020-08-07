@@ -30,7 +30,7 @@
 + You should be good after reading the above tutorials : )
 ---
 **Initialization of DistributedDataParralelism using mp.spawn()**
-```
+```python
 import torch.nn as nn
 import torch.distributed as dist
 import torch.utils.data.distributed
