@@ -22,6 +22,7 @@
 + [official doc 2](https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel): API for torch.nn.DistributedDataParallel
 + [official doc 3](https://pytorch.org/docs/master/distributed.html#distributed-basics): Basics of pytorch distributed training
 + [official doc 4](https://pytorch.org/tutorials/intermediate/dist_tuto.html): Good explanation of concepts (scatter, gather, reduce, all-reduce, broadcast, all-gather) and examples of low-level communications
++ [official doc 5](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html): Introduction to distributed data parallel. A good explanation of saving and loading ckp.
 + [official demo 1](https://github.com/pytorch/examples/blob/master/imagenet/main.py): Elegant example of DistributedDataParallel usage in imagenet that use ``mp.spawn()`` to init parallelism
 + [3rd party demo 1](https://fyubang.com/2019/07/23/distributed-training3/): Elegant example that use torch.distributed.launch to init parallelism
 + [3rd party demo 2](https://yangkky.github.io/2019/07/08/distributed-pytorch-tutorial.html): An example that use ``mp.spawn()`` to init parallelism 
@@ -30,6 +31,21 @@
 + You should be good after reading the above tutorials : )
 
 ## Initialization of DistributedDataParralelism using mp.spawn()
++ We put the usage of each component in the comments, where key modifications are:
+    + (1) ``mp.spawn()``
+    + (2) Correcting ``gpu, batch_size, workers, world_size`` and ``rank``
+    + (3) ``torch.utils.data.distrbuted.init_process_group()``
+    + (4) model: ``torch.DistributedDataParallel``
+    + (5) train_sampler: ``torch.utils.data.distributed.DistributedSampler``
+        + Need to move shuffle into dataset class rather than in loader
+    + (6) ``train_sampler.set_epoch(epoch)``
+    + (7) Only save ckp when ``args.rank % ngpus_per_node == 0``
++ Training script:
+    + **Single node, multiple GPUs**
+        + ``python main.py --dist-url 'tcp://127.0.0.1:FREEPORT' --world-size 1 --rank 0 --dist-backend 'nccl' --multiprocessing-distributed``
+    + **Multiple nodes**
+        + Node 0: ``python main.py --dist-url 'tcp://IP_OF_NODE0:FREEPORT' --world-size 2 --rank 0 --dist-backend 'nccl' --multiprocess-distributed``
+        + Node 1: ``python main.py --dist-url 'tcp://IP_OF_NODE0:FREEPORT' --world-size 2 --rank 1 --dist-backend 'nccl' --multiprocess-distributed``
 ```python
 import torch.nn as nn
 import torch.distributed as dist
@@ -70,11 +86,11 @@ def main_worker(gpu, ngpus_per_node, args):
         args.rank = args.rank * ngpus_per_node + gpu
     
     ## Important: How to set up init_process_group
-    # if init_method='env://': we are using system env variables like os.environ['MASTER_ADDR'] and os.environ['MASTER_PORT']. 
+    # if init_method='env://': we are using system env variables like os.environ['MASTER_ADDR'] and os.environ['MASTER_PORT'].
     # We can also directly specify the url for init_method, e.g. 'tcp://224.66.41.62:23456'
     # if we use torch.distributed.launch instead of mp.spawn(), torch.distributed.launch will automatically specify the env variables for us!
     # init_method can also be a shared filename, and the system will also do the remaining 
-    dist.init_process_group(backend='nccl', init_method='env://', world_size=args.world_size, rank=args.rank)
+    dist.init_process_group(backend='nccl', init_method=args.dist_url, world_size=args.world_size, rank=args.rank)
 
     # we need to use a scaled batch_size and workers for each sub-process to ensure the total num unchanged
     args.batch_size = int(args.batch_size / ngpus_per_node)
