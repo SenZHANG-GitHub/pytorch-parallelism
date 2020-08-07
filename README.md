@@ -28,8 +28,8 @@
 
 # How to Do Distributed Data Parallelism in pytorch
 + You should be good after reading the above tutorials : )
----
-**Initialization of DistributedDataParralelism using mp.spawn()**
+
+## Initialization of DistributedDataParralelism using mp.spawn()
 ```python
 import torch.nn as nn
 import torch.distributed as dist
@@ -158,8 +158,7 @@ def save_ckp('state, is_best, filename='ckp.pth.tar'):
         shutil.copyfile(filename, 'model_best.pth.tar')
 
 ```
----
-**Initialization of DistributedDataParralelism using torch.distributed.launch**
+## Initialization of DistributedDataParralelism using torch.distributed.launch
 + we can run from cmd line using ``-m torch.distributed.launch``
 + e.g. ``CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 main.py``
 + torch.distributed.launch will distribute a local_rank which can be accessed by torch.distributed.get_rank()
