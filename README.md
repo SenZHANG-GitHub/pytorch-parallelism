@@ -195,10 +195,7 @@ model = torch.nn.parallel.DistributedDataParallel(
 + **Single-Node multi-process distributed training**
     + ``python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE main.py``
     + master addr and port will be automatically distributed in this local machine
-+ **Multi-None multi-process distributed training: (e.g. two nodes)**
-    + For node 1
-        + ``python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE --nnodes=2 --node_rank=0 --master_addr="192.168. master addr and port will be automatically distributed in this local machine
-    + **Multi-None multi-process distributed training: (e.g. two nodes)**
++ **Multi-Node multi-process distributed training: (e.g. two nodes)**
     + For node 1
         + ``python -m torch.distributed.launch --nproc_per_node=NUM_GPUS_YOU_HAVE --nnodes=2 --node_rank=0 --master_addr="192.168.1.1" --master_port=1234 main.py``
     + For node 2
@@ -208,22 +205,20 @@ model = torch.nn.parallel.DistributedDataParallel(
 + **Important Notices for torch.distributed.launch**
     + we can use ``os.environ['LOCAL_RANK']`` to get local_rank if we launch the script with ``--use_env=True`` 
     + we can also use argparse to get the local rank
-
-```python
-import argparse
-parser.argparse.ArgumentParser()
-parser.add_argument('--local_rank', type=int)
-args = parser.parse_args()
-
-# Method 1:
-torch.cuda.set_device(args.local_rank)
-
-# Method 2:
-with torch.cuda.device(args.local_rank):
-    # Code block
-
-```
-    + we need to call ``torch.distributed.init_process_group`` at the beginning to start the distributed backend. And here the init_method must be ``'env://``, which is the only supported init_method by this module
+    + ```python
+      import argparse
+      parser.argparse.ArgumentParser()
+      parser.add_argument('--local_rank', type=int)
+      args = parser.parse_args()
+      
+      # Method 1:
+      torch.cuda.set_device(args.local_rank)
+      
+      # Method 2:
+      with torch.cuda.device(args.local_rank):
+          # Code block
+      ```
+    + we need to call ``torch.distributed.init_process_group`` at the beginning to start the distributed backend. And here the init_method must be ``'env://'``, which is the only supported init_method by this module
     + local_rank is not globally unique: it is only unique per process on a machine.
 
 
